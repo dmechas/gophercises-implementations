@@ -10,20 +10,21 @@ import (
 	"strings"
 )
 
-func check(e error) {
-	if e != nil {
-		panic(e)
-	}
+func exit(msg string) {
+	fmt.Println(msg)
+	os.Exit(1)
 }
 
 func main() {
-	limitPtr := flag.Int("limit", 30, "an int")
+	// limitPtr := flag.Int("limit", 30, "an int")
 	csvPtr := flag.String("csv", "problems.csv", "a string")
 
 	flag.Parse()
 
 	file, err := os.Open(*csvPtr)
-	check(err)
+	if err != nil {
+		exit(fmt.Sprintf("Failed to open the CSV file: %s\n", *csvPtr))
+	}
 
 	r := csv.NewReader(file)
 	score := 0
@@ -32,6 +33,10 @@ func main() {
 		problem, err := r.Read()
 		if err == io.EOF {
 			break
+		}
+		if err != nil {
+			fmt.Println("Failed to parse the provided CSV line.")
+			continue
 		}
 		nProblems++
 
