@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"time"
 )
 
 func exit(msg string) {
@@ -16,7 +17,7 @@ func exit(msg string) {
 }
 
 func main() {
-	// limitPtr := flag.Int("limit", 30, "an int")
+	limitPtr := flag.Int("limit", 30, "an int")
 	csvPtr := flag.String("csv", "problems.csv", "a string")
 
 	flag.Parse()
@@ -25,10 +26,13 @@ func main() {
 	if err != nil {
 		exit(fmt.Sprintf("Failed to open the CSV file: %s\n", *csvPtr))
 	}
+	timer := time.NewTimer(time.Duration(*limitPtr) * time.Second)
 
 	r := csv.NewReader(file)
 	score := 0
 	nProblems := 0
+
+quizloop:
 	for {
 		problem, err := r.Read()
 		if err == io.EOF {
@@ -40,14 +44,28 @@ func main() {
 		}
 		nProblems++
 
-		reader := bufio.NewReader(os.Stdin)
-		fmt.Printf("Problem #%v: %v =", nProblems, problem[0])
-		text, _ := reader.ReadString('\n')
-		text = strings.TrimSuffix(text, "\n")
+		answerCh := make(chan string)
 
-		if text == problem[1] {
-			score++
+		go func() {
+			var text string
+			reader := bufio.NewReader(os.Stdin)
+			fmt.Printf("Problem #%v: %v = ", nProblems, problem[0])
+			text, _ = reader.ReadString('\n')
+			answerCh <- text
+		}()
+
+		select {
+		case <-timer.C:
+			fmt.Println()
+			break quizloop
+		case text := <-answerCh:
+			text = strings.TrimSuffix(text, "\n")
+
+			if text == problem[1] {
+				score++
+			}
 		}
+
 	}
 	fmt.Printf("You scored %v out of %v\n", score, nProblems)
 }
