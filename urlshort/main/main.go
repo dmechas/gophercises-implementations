@@ -1,33 +1,51 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"github.com/gophercises/urlshort"
+	"gopkg.in/yaml.v2"
 )
 
 func main() {
-	defaultHandler := buildDefaultHandler()
-
 	pathsToUrls := map[string]string{
 		"/urlshort-godoc": "https://godoc.org/github.com/gophercises/urlshort",
 		"/yaml-godoc":     "https://godoc.org/gopkg.in/yaml.v2",
 	}
-	mapHandler := urlshort.MapHandler(pathsToUrls, defaultHandler)
-
-	yaml := `
+	yamlData := `
 - path: /urlshort
   url: https://github.com/gophercises/urlshort
 - path: /urlshort-final
   url: https://github.com/gophercises/urlshort/tree/solution
 `
-	yamlHandler, err := urlshort.YAMLHandler([]byte(yaml), mapHandler)
+	jsonData := `
+[
+	{
+		"path": "/json",
+		"url": "https://www.json.org/"
+	},
+	{
+		"path": "/jsonlint",
+		"url": "https://jsonlint.com/"
+	}
+]
+`
+
+	defaultHandler := buildDefaultHandler()
+	mapHandler := urlshort.MapHandler(pathsToUrls, defaultHandler)
+	yamlHandler, err := urlshort.DataHandler([]byte(yamlData), yaml.Unmarshal, mapHandler)
 	if err != nil {
 		panic(err)
 	}
+	jsonHandler, err := urlshort.DataHandler([]byte(jsonData), json.Unmarshal, yamlHandler)
+	if err != nil {
+		panic(err)
+	}
+
 	fmt.Println("Starting the server on :8080")
-	http.ListenAndServe("localhost:8080", yamlHandler)
+	http.ListenAndServe("localhost:8080", jsonHandler)
 }
 
 func buildDefaultHandler() http.Handler {
