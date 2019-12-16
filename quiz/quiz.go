@@ -28,14 +28,15 @@ func main() {
 	timer := time.NewTimer(time.Duration(*limitPtr) * time.Second)
 
 	r := csv.NewReader(file)
-	problems, err := r.ReadAll()
+	lines, err := r.ReadAll()
+	problems := parseLines(lines)
 	if err != nil {
 		exit("Failed to parse the provided CSV file.")
 	}
 	score := 0
 
 quizloop:
-	for i, p := range problems {
+	for i, problem := range problems {
 		if err != nil {
 			fmt.Println("Failed to parse the provided CSV line.")
 			continue
@@ -46,7 +47,7 @@ quizloop:
 		go func() {
 			var text string
 			reader := bufio.NewReader(os.Stdin)
-			fmt.Printf("Problem #%v: %v = ", i+1, p[0])
+			fmt.Printf("Problem #%v: %v = ", i+1, problem.question)
 			text, _ = reader.ReadString('\n')
 			answerCh <- text
 		}()
@@ -58,11 +59,27 @@ quizloop:
 		case text := <-answerCh:
 			text = strings.TrimSuffix(text, "\n")
 
-			if text == p[1] {
+			if text == problem.answer {
 				score++
 			}
 		}
 
 	}
 	fmt.Printf("You scored %v out of %v\n", score, len(problems))
+}
+
+type problem struct {
+	question string
+	answer   string
+}
+
+func parseLines(lines [][]string) []problem {
+	problems := make([]problem, len(lines))
+	for i, line := range lines {
+		problems[i] = problem{
+			question: line[0],
+			answer:   strings.TrimSpace(line[1]),
+		}
+	}
+	return problems
 }
