@@ -1,15 +1,18 @@
 package deck
 
-import (
-	"testing"
+import "fmt"
 
-	"github.com/stretchr/testify/assert"
-)
+func ExampleCard() {
+	fmt.Println(Card{Rank: Ace, Suit: Heart})
+	fmt.Println(Card{Rank: Two, Suit: Spade})
+	fmt.Println(Card{Rank: Nine, Suit: Diamond})
+	fmt.Println(Card{Rank: Jack, Suit: Club})
+	fmt.Println(Card{Suit: Joker})
 
-func TestExampleCard(t *testing.T) {
-	assert.Equal(t, "Ace of Hearts", Card{Rank: Ace, Suit: Heart}.String())
-	assert.Equal(t, "Two of Spades", Card{Rank: Two, Suit: Spade}.String())
-	assert.Equal(t, "Nine of Diamonds", Card{Rank: Nine, Suit: Diamond}.String())
-	assert.Equal(t, "Jack of Clubs", Card{Rank: Jack, Suit: Club}.String())
-	assert.Equal(t, "Joker", Card{Suit: Joker}.String())
+	// Output:
+	// Ace of Hearts
+	// Two of Spades
+	// Nine of Diamonds
+	// Jack of Clubs
+	// Joker
 }
