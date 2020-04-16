@@ -92,10 +92,11 @@ func absRank(c Card) int {
 
 var DefaultSort = Sort(Less)
 
+var shuffleRand = rand.New(rand.NewSource(time.Now().Unix()))
+
 func Shuffle(cards []Card) []Card {
 	ret := make([]Card, len(cards))
-	r := rand.New(rand.NewSource(time.Now().Unix()))
-	for i, id := range r.Perm(len(cards)) {
+	for i, id := range shuffleRand.Perm(len(cards)) {
 		ret[i] = cards[id]
 	}
 	return ret
