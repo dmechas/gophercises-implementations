@@ -1,3 +1,3 @@
-module github.com/dmechas/deck
+module github.com/dmechas/gophercises-implementations/deck
 
 go 1.13
